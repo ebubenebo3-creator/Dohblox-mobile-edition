@@ -1,0 +1,2076 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no">
+    <title>DOH BLOX - Mobile Edition</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/three.js/r128/three.min.js"></script>
+    <style>
+        * { box-sizing: border-box; touch-action: manipulation; }
+        body {
+            margin: 0; padding: 0;
+            font-family: Arial, Helvetica, sans-serif;
+            background: #2b70c9; font-size: 12px;
+            user-select: none;
+            -webkit-user-select: none;
+            overflow-x: hidden;
+        }
+
+        #main-wrapper {
+            width: 100%; max-width: 960px; margin: 0 auto;
+            background: #ffffff; box-shadow: 0px 0px 15px rgba(0,0,0,0.5);
+            min-height: 100vh;
+        }
+
+        /* HEADER */
+        header {
+            background: linear-gradient(to bottom, #1d6ecb 0%, #308bf6 50%, #175bb1 100%);
+            height: 80px; padding: 0 15px; display: flex; align-items: center;
+            justify-content: space-between; position: relative; border-bottom: 2px solid #0d3e7a;
+        }
+
+        .user-pill { display: flex; align-items: center; gap: 8px; color: white; font-weight: bold; }
+        .user-icon {
+            width: 32px; height: 32px; background: #e14022;
+            border: 2px solid #ffffff; border-radius: 4px;
+            display: flex; align-items: center; justify-content: center;
+        }
+
+        .brand-title {
+            font-family: 'Arial Black', Impact, sans-serif; font-size: 32px; color: #d80000;
+            text-shadow: 2px 2px 0px #ffffff, -2px -2px 0px #ffffff, 2px -2px 0px #ffffff, -2px 2px 0px #ffffff, 0px 4px 5px rgba(0,0,0,0.5);
+            letter-spacing: 1px; text-decoration: none; position: absolute; left: 50%; transform: translateX(-50%);
+            cursor: pointer;
+        }
+
+        .header-actions { display: flex; align-items: center; gap: 10px; }
+
+        .currency-pill {
+            background: linear-gradient(to bottom, #1c4b82, #0d2e54);
+            border: 1px solid #4d88cb; border-radius: 12px;
+            padding: 4px 12px; color: #ffcc00; font-weight: bold; font-size: 13px;
+            cursor: pointer;
+        }
+
+        /* NAVBAR */
+        nav {
+            background: linear-gradient(to bottom, #023879, #002552);
+            padding: 0 10px; display: flex; align-items: center; height: auto; min-height: 34px;
+            border-bottom: 1px solid #00122b; justify-content: space-between; flex-wrap: wrap;
+        }
+
+        .nav-links { display: flex; flex-wrap: wrap; }
+        nav a {
+            color: white; text-decoration: none; font-weight: bold;
+            padding: 8px 10px; font-size: 11px; cursor: pointer;
+            border-right: 1px solid rgba(255,255,255,0.1);
+        }
+        nav a:hover { background: rgba(255,255,255,0.15); }
+
+        .search-bar-nav { display: flex; gap: 4px; align-items: center; padding: 4px 0; }
+        .search-bar-nav input { padding: 3px 6px; font-size: 11px; border-radius: 2px; border: 1px solid #ccc; width: 110px; }
+
+        /* LAYOUT */
+        .page-content { display: flex; padding: 15px; gap: 15px; flex-direction: column; }
+        @media(min-width: 768px) {
+            .page-content { flex-direction: row; }
+            .brand-title { font-size: 42px; }
+        }
+
+        .sidebar { width: 100%; border: 1px solid #b5b5b5; background: #f9f9f9; padding: 10px; border-radius: 3px; }
+        @media(min-width: 768px) { .sidebar { width: 170px; } }
+        .sidebar h3 { margin: 0 0 10px 0; font-size: 14px; border-bottom: 1px solid #ccc; padding-bottom: 5px; }
+        .sidebar-menu { list-style: none; padding: 0; margin: 0; display: flex; flex-wrap: wrap; gap: 10px; }
+        @media(min-width: 768px) { .sidebar-menu { display: block; } .sidebar-menu li { margin-bottom: 8px; } }
+        .sidebar-menu a { color: #0055b3; text-decoration: none; cursor: pointer; }
+        .main-area { flex: 1; }
+
+        /* TABS & BUTTONS */
+        .tab-bar { display: flex; gap: 5px; border-bottom: 2px solid #a3a3a3; margin-bottom: 15px; flex-wrap: wrap; }
+        .tab {
+            padding: 6px 15px; background: #e2e2e2; border: 1px solid #a3a3a3;
+            border-bottom: none; font-weight: bold; color: #333; cursor: pointer;
+            border-top-left-radius: 4px; border-top-right-radius: 4px;
+        }
+        .tab.active { background: #ffffff; border-bottom: 2px solid #ffffff; margin-bottom: -2px; color: #003366; }
+
+        .btn-style {
+            background: linear-gradient(to bottom, #ffffff, #dcdcdc);
+            border: 1px solid #777; padding: 4px 12px; font-size: 11px;
+            font-weight: bold; cursor: pointer; border-radius: 2px;
+        }
+
+        .btn-play {
+            width: 100%; margin-top: 6px; padding: 8px;
+            background: linear-gradient(to bottom, #00b000, #008000);
+            border: 1px solid #004d00; border-radius: 4px;
+            color: white; font-weight: bold; font-size: 13px; cursor: pointer;
+            box-shadow: inset 0 1px 0 rgba(255,255,255,0.4);
+        }
+
+        .btn-danger {
+            background: linear-gradient(to bottom, #ff4d4d, #cc0000); color: white;
+            border: 1px solid #800000; padding: 6px 14px; font-weight: bold; cursor: pointer;
+            border-radius: 3px;
+        }
+
+        .btn-mod {
+            background: linear-gradient(to bottom, #00b33c, #00802b); color: white;
+            border: 1px solid #004d1a; padding: 6px 14px; font-weight: bold; cursor: pointer;
+            border-radius: 3px;
+        }
+
+        /* GRIDS & CARDS */
+        .games-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(220px, 1fr)); gap: 12px; }
+        .game-card { border: 1px solid #999; background: #fff; padding: 6px; cursor: pointer; }
+        .card-banner { height: 120px; width: 100%; background: #000; overflow: hidden; border: 1px solid #777; margin-bottom: 6px; }
+        .card-banner canvas { width: 100%; height: 100%; display: block; }
+
+        .catalog-grid { display: grid; grid-template-columns: repeat(auto-fill, minmax(130px, 1fr)); gap: 10px; }
+        .catalog-item { border: 1px solid #ccc; padding: 8px; text-align: center; background: #fff; }
+        .catalog-3d-preview { width: 100%; height: 90px; background: #f0f0f0; margin-bottom: 5px; }
+
+        #profile-avatar-container, #avatar-editor-3d { width: 180px; height: 230px; border: 1px solid #ccc; background: #eef5fc; margin: 0 auto 10px auto; }
+
+        .badge-container { display: flex; gap: 5px; flex-wrap: wrap; justify-content: center; margin-top: 8px; }
+        .badge-pill { background: #ffcc00; border: 1px solid #b8860b; padding: 3px 8px; font-size: 10px; font-weight: bold; border-radius: 3px; color: #333; }
+        .badge-verified { background: #1da1f2; color: white; border: 1px solid #0c85d0; }
+        .badge-mod { background: #00802b; color: white; border: 1px solid #004d1a; }
+        .badge-dc { background: #0055b3; color: white; border: 1px solid #002552; }
+        .badge-tdc { background: #ff8c00; color: white; border: 1px solid #b36b00; }
+        .badge-odc { background: #d80000; color: white; border: 1px solid #800000; }
+        .badge-winner { background: linear-gradient(to bottom, #ffe066, #ffaa00); color: #000; border: 1px solid #cc8800; font-weight: bold; }
+        .verified-check { color: #1da1f2; font-weight: bold; margin-left: 3px; }
+
+        .mod-box { border: 2px solid #d80000; background: #fff5f5; padding: 15px; margin-bottom: 15px; border-radius: 4px; }
+        .report-item { background: white; border: 1px solid #ccc; padding: 10px; margin-bottom: 8px; display: flex; justify-content: space-between; align-items: center; }
+
+        .modal-overlay { position: fixed; top: 0; left: 0; right: 0; bottom: 0; background: rgba(0,0,0,0.6); display: flex; align-items: center; justify-content: center; z-index: 1000; }
+        .modal-box { background: #fff; border: 2px solid #002552; width: 90%; max-width: 450px; padding: 20px; border-radius: 4px; }
+        
+        #game-viewport-modal { position: fixed; top: 0; left: 0; width: 100vw; height: 100vh; background: #000; z-index: 2000; display: flex; flex-direction: column; }
+        #game-canvas-container { flex: 1; width: 100%; height: 100%; position: relative; touch-action: none; }
+        .game-hud { height: 40px; background: #111; color: white; display: flex; align-items: center; justify-content: space-between; padding: 0 15px; z-index: 2001; }
+
+        #game-loading-overlay {
+            position: fixed; top: 0; left: 0; width: 100vw; height: 100vh;
+            background: rgba(10, 20, 35, 0.92); z-index: 3000;
+            display: flex; flex-direction: column; align-items: center; justify-content: center;
+        }
+
+        .loading-card {
+            background: linear-gradient(to bottom, #ffffff 0%, #e6e6e6 100%);
+            border: 3px solid #0d3e7a; border-radius: 8px;
+            width: 85%; max-width: 420px; padding: 25px 20px; text-align: center;
+            box-shadow: 0 0 25px rgba(0,0,0,0.8); position: relative;
+        }
+
+        .loading-title { font-family: 'Arial Black', Impact, sans-serif; font-size: 26px; color: #0d3e7a; margin-bottom: 4px; text-transform: uppercase; }
+        .loading-game-name { font-size: 15px; font-weight: bold; color: #d80000; margin-bottom: 18px; }
+        .loading-spinner { width: 44px; height: 44px; margin: 15px auto; border: 5px solid #ccc; border-top: 5px solid #0055b3; border-radius: 50%; animation: spin 0.9s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        .loading-status-text { font-size: 12px; font-weight: bold; color: #333; margin-top: 10px; margin-bottom: 20px; }
+
+        /* GAME CHAT & LEADERBOARD */
+        #game-chat-overlay {
+            position: absolute; top: 50px; left: 10px; width: 220px; height: 130px;
+            background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px; display: flex; flex-direction: column; padding: 6px; z-index: 2002;
+        }
+        #chat-messages { flex: 1; overflow-y: auto; color: white; font-size: 10px; margin-bottom: 4px; display: flex; flex-direction: column; gap: 3px; }
+        .chat-msg { line-height: 1.2; word-break: break-word; }
+        .chat-user { font-weight: bold; color: #ffcc00; }
+        #chat-input-row { display: flex; gap: 4px; }
+        #chat-input-row input { flex: 1; padding: 3px; font-size: 10px; border-radius: 3px; border: 1px solid #666; background: #222; color: #fff; }
+
+        #game-leaderboard {
+            position: absolute; top: 10px; right: 10px; width: 140px;
+            background: rgba(0,0,0,0.65); border: 1px solid rgba(255,255,255,0.3);
+            border-radius: 5px; padding: 6px; color: white; font-size: 10px; z-index: 2002;
+        }
+        #game-leaderboard h4 { margin: 0 0 4px 0; border-bottom: 1px solid #555; padding-bottom: 2px; text-align: center; }
+        .leaderboard-row { display: flex; justify-content: space-between; padding: 1px 0; }
+
+        /* MOBILE TOUCH CONTROLS OVERLAY */
+        #mobile-touch-controls {
+            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
+            pointer-events: none; z-index: 2003;
+        }
+
+        #touch-joystick-zone {
+            position: absolute; bottom: 30px; left: 25px;
+            width: 120px; height: 120px;
+            background: rgba(255, 255, 255, 0.18);
+            border: 2px solid rgba(255, 255, 255, 0.4);
+            border-radius: 50%; pointer-events: auto; touch-action: none;
+        }
+
+        #touch-joystick-knob {
+            position: absolute; top: 35px; left: 35px;
+            width: 50px; height: 50px;
+            background: rgba(255, 255, 255, 0.6);
+            border: 2px solid rgba(255, 255, 255, 0.9);
+            border-radius: 50%; transition: transform 0.05s ease-out;
+        }
+
+        .touch-action-btn {
+            position: absolute; pointer-events: auto;
+            border-radius: 50%; font-weight: bold; color: white;
+            display: flex; align-items: center; justify-content: center;
+            border: 2px solid rgba(255,255,255,0.7);
+            box-shadow: 0 4px 8px rgba(0,0,0,0.5);
+            text-shadow: 1px 1px 2px #000;
+        }
+
+        #btn-touch-jump {
+            bottom: 35px; right: 25px; width: 70px; height: 70px;
+            background: radial-gradient(circle, rgba(0,180,0,0.85), rgba(0,100,0,0.85));
+            font-size: 13px;
+        }
+
+        #btn-touch-attack {
+            bottom: 120px; right: 35px; width: 60px; height: 60px;
+            background: radial-gradient(circle, rgba(220,0,0,0.85), rgba(120,0,0,0.85));
+            font-size: 11px;
+        }
+
+        /* 2009 ROBLOX HOTBAR & HEALTHBAR UI */
+        #roblox-hud-bottom {
+            position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%);
+            display: flex; flex-direction: column; align-items: center; gap: 4px; z-index: 2002;
+            max-width: 95vw;
+        }
+
+        .hotbar-container {
+            display: flex; gap: 2px; background: rgba(0, 0, 0, 0.35); padding: 3px;
+            border-radius: 6px; border: 1px solid rgba(255, 255, 255, 0.3);
+            overflow-x: auto; max-width: 90vw;
+        }
+
+        .hotbar-slot {
+            width: 42px; height: 42px; flex-shrink: 0;
+            background: radial-gradient(circle, rgba(120, 120, 120, 0.4) 0%, rgba(40, 40, 40, 0.55) 100%);
+            border: 1px solid rgba(255, 255, 255, 0.25); border-radius: 4px;
+            position: relative; cursor: pointer; display: flex; justify-content: center; align-items: center;
+            color: white; font-size: 8px; font-weight: bold; text-align: center;
+        }
+
+        .hotbar-slot.selected {
+            border: 2px solid #ffffff;
+            box-shadow: 0 0 8px rgba(255, 255, 255, 0.8);
+            background: radial-gradient(circle, rgba(180, 180, 180, 0.5) 0%, rgba(80, 80, 80, 0.65) 100%);
+        }
+
+        .hotbar-slot .slot-number { position: absolute; top: 1px; left: 2px; color: rgba(255, 255, 255, 0.85); font-size: 9px; }
+        .hotbar-slot .slot-label { margin-top: 6px; pointer-events: none; text-shadow: 1px 1px 2px black; }
+
+        .health-bar-container {
+            width: 220px; height: 18px; background: #1a1a1a;
+            border: 1px solid rgba(255, 255, 255, 0.4); display: flex; position: relative;
+        }
+
+        .health-bar-fill { height: 100%; width: 100%; background: linear-gradient(to bottom, #00e600 0%, #008000 100%); transition: width 0.2s ease; }
+        .health-bar-text { position: absolute; right: 0; top: 0; bottom: 0; width: 40px; background: #111; color: #fff; font-weight: bold; font-size: 10px; display: flex; align-items: center; justify-content: center; }
+
+        #achievement-popup {
+            position: absolute; bottom: 20px; right: 20px; width: 260px;
+            background: linear-gradient(to bottom, #2c3e50, #1a252f);
+            border: 2px solid #ffcc00; border-radius: 6px; padding: 8px;
+            color: white; display: flex; align-items: center; gap: 10px;
+            box-shadow: 0 0 15px rgba(255,204,0,0.5); z-index: 2005;
+            transition: transform 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275), opacity 0.4s ease;
+            transform: translateY(120px); opacity: 0; pointer-events: none;
+        }
+        #achievement-popup.show { transform: translateY(0); opacity: 1; }
+        .badge-icon-box { width: 36px; height: 36px; background: #ffcc00; border-radius: 50%; display: flex; align-items: center; justify-content: center; font-size: 18px; border: 2px solid #fff; flex-shrink: 0; }
+        .badge-text-box strong { color: #ffcc00; font-size: 10px; text-transform: uppercase; display: block; }
+        .badge-text-box span { font-size: 12px; font-weight: bold; color: #ffffff; }
+
+        .hidden { display: none !important; }
+        .form-group { margin-bottom: 12px; }
+        .form-group label { display: block; font-weight: bold; margin-bottom: 4px; }
+        .form-group input, .form-group select, .form-group textarea { width: 100%; padding: 5px; }
+    </style>
+</head>
+<body>
+
+<div id="main-wrapper">
+    <header>
+        <div class="user-pill">
+            <div class="user-icon">👤</div>
+            <span><span id="header-user-display">Guest</span><span id="header-verified-icon" class="verified-check" style="display:none;">✔</span></span>
+        </div>
+        <a class="brand-title" onclick="switchTab('games')">DOH BLOX</a>
+        <div class="header-actions">
+            <div class="currency-pill" onclick="switchTab('shop')"><span>B <span id="header-balance">0</span></span></div>
+            <button class="btn-style" id="btn-login-modal" onclick="openLoginModal()">Login</button>
+        </div>
+    </header>
+
+    <nav>
+        <div class="nav-links">
+            <a onclick="switchTab('games')">Games</a>
+            <a onclick="switchTab('catalog')">Catalog</a>
+            <a onclick="switchTab('avatar')">Avatar</a>
+            <a onclick="switchTab('inbox')">Inbox</a>
+            <a onclick="switchTab('shop')">Get Dohbux</a>
+            <a onclick="openMyOwnProfile()">Profile</a>
+            <a id="nav-settings-tab" onclick="switchTab('settings')">Settings</a>
+            <a id="nav-mod-tab" onclick="switchTab('moderation')" style="color: #ff3333; display: none;">Mod Hub</a>
+        </div>
+        <div class="search-bar-nav">
+            <input type="text" id="global-player-search" placeholder="Search...">
+            <button class="btn-style" onclick="searchPlayerGlobal()">Go</button>
+        </div>
+    </nav>
+
+    <div class="page-content">
+        <div class="sidebar">
+            <h3>Menu</h3>
+            <ul class="sidebar-menu">
+                <li><a onclick="switchTab('games')">► Games</a></li>
+                <li><a onclick="switchTab('catalog')">► Catalog</a></li>
+                <li><a onclick="switchTab('avatar')">► Avatar</a></li>
+                <li><a onclick="switchTab('inbox')">► Inbox</a></li>
+                <li><a onclick="switchTab('shop')">► Buy Dohbux</a></li>
+                <li><a onclick="openMyOwnProfile()">► Profile</a></li>
+                <li id="sidebar-settings-tab"><a onclick="switchTab('settings')">► Settings</a></li>
+                <li><a onclick="switchTab('moderation')" style="color:red; font-weight:bold;">► Reports</a></li>
+            </ul>
+        </div>
+
+        <div class="main-area">
+
+            <!-- GAMES LIST -->
+            <div id="section-games">
+                <div class="tab-bar"><div class="tab active">All Games</div></div>
+                <div class="games-grid" id="games-grid-container"></div>
+            </div>
+
+            <!-- INBOX SECTION -->
+            <div id="section-inbox" class="hidden">
+                <div class="tab-bar"><div class="tab active">My Messages</div></div>
+                <div style="border: 1px solid #ccc; background: #fff; padding: 15px;">
+                    <h3>System Messages & Notifications</h3>
+                    <div style="border-bottom: 1px solid #eee; padding: 8px 0;">
+                        <strong>Welcome to Dohblox Mobile!</strong> <span style="color: gray;">- System</span><br>
+                        <small>Play games with on-screen touch controls, customize your avatar, and explore places!</small>
+                    </div>
+                </div>
+            </div>
+
+            <!-- CATALOG -->
+            <div id="section-catalog" class="hidden">
+                <div class="tab-bar">
+                    <div class="tab active" onclick="filterCatalog('all')">All</div>
+                    <div class="tab" onclick="filterCatalog('hats')">Hats</div>
+                    <div class="tab" onclick="filterCatalog('gear')">Gear</div>
+                    <div class="tab" onclick="filterCatalog('faces')">Glasses</div>
+                </div>
+                <div class="catalog-grid" id="catalog-items-container"></div>
+            </div>
+
+            <!-- AVATAR EDITOR -->
+            <div id="section-avatar" class="hidden">
+                <div class="tab-bar"><div class="tab active">Avatar Customizer</div></div>
+                <div style="display: flex; flex-direction: column; gap: 20px;">
+                    <div style="text-align: center;">
+                        <div id="avatar-editor-3d"></div>
+                        <small>3D Character Preview</small>
+                    </div>
+                    <div>
+                        <h3>Body Colors</h3>
+                        <div style="display: flex; gap: 6px; flex-wrap: wrap; margin-bottom: 15px;">
+                            <button class="btn-style" onclick="setAvatarColor('torso', 0x0055b3)">Blue Torso</button>
+                            <button class="btn-style" onclick="setAvatarColor('torso', 0xd80000)">Red Torso</button>
+                            <button class="btn-style" onclick="setAvatarColor('torso', 0x009933)">Green Torso</button>
+                            <button class="btn-style" onclick="setAvatarColor('limbs', 0xffcc00)">Yellow Limbs</button>
+                            <button class="btn-style" onclick="setAvatarColor('limbs', 0x333333)">Black Limbs</button>
+                        </div>
+                        <h3>Inventory</h3>
+                        <div id="avatar-inventory-list"><p>Purchased catalog items appear here.</p></div>
+                    </div>
+                </div>
+            </div>
+
+            <!-- SHOP & MEMBERSHIPS -->
+            <div id="section-shop" class="hidden">
+                <div class="tab-bar"><div class="tab active">Dohbux & Memberships</div></div>
+                <h3>Dohers Club Memberships</h3>
+                <div style="display: grid; grid-template-columns: repeat(auto-fill, minmax(180px, 1fr)); gap: 10px; margin-bottom: 20px;">
+                    <div style="border: 1px solid #ccc; padding: 12px; background: #fafafa; text-align: center;">
+                        <h4 style="margin: 0 0 5px 0; color: #0055b3;">Standard DC</h4>
+                        <p style="font-size: 11px;">15 Daily Dohbux</p>
+                        <strong style="color: green;">$5.95 / mo</strong><br><br>
+                        <button class="btn-style" onclick="openPaymentModal('Standard Dohers Club', 5.95)">Join DC</button>
+                    </div>
+                    <div style="border: 1px solid #ccc; padding: 12px; background: #fafafa; text-align: center;">
+                        <h4 style="margin: 0 0 5px 0; color: #ff8c00;">Turbo TDC</h4>
+                        <p style="font-size: 11px;">35 Daily Dohbux</p>
+                        <strong style="color: green;">$11.95 / mo</strong><br><br>
+                        <button class="btn-style" onclick="openPaymentModal('Turbo Dohers Club', 11.95)">Join TDC</button>
+                    </div>
+                    <div style="border: 1px solid #ccc; padding: 12px; background: #fafafa; text-align: center;">
+                        <h4 style="margin: 0 0 5px 0; color: #d80000;">Outrageous ODC</h4>
+                        <p style="font-size: 11px;">60 Daily Dohbux</p>
+                        <strong style="color: green;">$19.95 / mo</strong><br><br>
+                        <button class="btn-style" onclick="openPaymentModal('Outrageous Dohers Club', 19.95)">Join ODC</button>
+                    </div>
+                </div>
+
+                <h3>Buy Dohbux Packs</h3>
+                <div style="display: grid; grid-template-columns: repeat(3, 1fr); gap: 10px;">
+                    <div style="border: 1px solid #ccc; padding: 10px; background: #fff; text-align: center;">
+                        <strong>500 Dohbux</strong><br><span style="color:green;">$4.95</span><br><br>
+                        <button class="btn-style" onclick="openPaymentModal('500 Dohbux Pack', 4.95)">Buy</button>
+                    </div>
+                    <div style="border: 1px solid #ccc; padding: 10px; background: #fff; text-align: center;">
+                        <strong>1,000 Dohbux</strong><br><span style="color:green;">$9.95</span><br><br>
+                        <button class="btn-style" onclick="openPaymentModal('1,000 Dohbux Pack', 9.95)">Buy</button>
+                    </div>
+                    <div style="border: 1px solid #ccc; padding: 10px; background: #fff; text-align: center;">
+                        <strong>2,750 Dohbux</strong><br><span style="color:green;">$24.95</span><br><br>
+                        <button class="btn-style" onclick="openPaymentModal('2,750 Dohbux Pack', 24.95)">Buy</button>
+                    </div>
+                </div>
+            </div>
+
+            <!-- PROFILE VIEW -->
+            <div id="section-profile" class="hidden">
+                <div id="profile-found-view" style="display: flex; flex-direction: column; gap: 15px;">
+                    <div style="text-align: center;">
+                        <div id="profile-avatar-container"></div>
+                        <h2 style="margin: 0; display:flex; align-items:center; justify-content:center;">
+                            <span id="prof-username">Guest</span>
+                            <span id="prof-verified-icon" class="verified-check" style="display:none;">✔</span>
+                        </h2>
+                        <div class="badge-container" id="prof-badges-container"></div>
+                    </div>
+                    <div>
+                        <h3>Player Info</h3>
+                        <p><strong>Status:</strong> <span id="prof-status-text" style="color:green; font-weight:bold;">Active</span></p>
+                        <p><strong>Role:</strong> <span id="prof-role-text">Player</span></p>
+                        <p style="background: #f0f0f0; padding: 10px; border: 1px solid #ccc;" id="prof-bio-text">Welcome to Dohblox!</p>
+                        
+                        <div id="prof-mod-panel" class="mod-box hidden">
+                            <h4 style="margin: 0 0 10px 0; color: #b30000;">🛡️ Moderator Controls</h4>
+                            <div id="prof-mod-warning" style="color: red; font-weight: bold; margin-bottom: 8px;"></div>
+                            
+                            <label><strong>Reason / Report:</strong></label><br>
+                            <select id="mod-report-select" style="width: 100%; margin: 5px 0 10px 0; padding: 4px;">
+                                <option value="Direct Ban (No Report Selected)">Direct Ban (No Report Selected)</option>
+                            </select>
+
+                            <div style="display: flex; gap: 10px;">
+                                <button class="btn-danger" id="btn-action-ban" onclick="executeBanCurrentProfile()">Ban Player</button>
+                                <button class="btn-mod hidden" id="btn-action-toggle-mod" onclick="toggleModStatusCurrentProfile()">Mod Status</button>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+
+                <div id="profile-not-found-view" class="hidden" style="border:1px solid #ccc; background:#fff; padding:30px; text-align:center;">
+                    <h2 style="color:#d80000; margin-top:0;">User Not Found</h2>
+                    <p>The player username you searched for does not exist on Dohblox.</p>
+                    <button class="btn-style" onclick="switchTab('games')">Return to Games</button>
+                </div>
+            </div>
+
+            <!-- MODERATION HUB -->
+            <div id="section-moderation" class="hidden">
+                <h2 style="color: #b30000; margin-top:0;">🛡️ Moderation & Report Center</h2>
+                <div style="border: 1px solid #ccc; background: #fafafa; padding: 10px; margin-bottom: 15px;">
+                    <label><strong>Search Player Profile:</strong></label><br>
+                    <div style="display: flex; gap: 8px; margin-top: 5px;">
+                        <input type="text" id="mod-search-input" placeholder="Enter username..." style="flex:1; padding: 4px;">
+                        <button class="btn-style" onclick="searchProfileFromMod()">Inspect</button>
+                    </div>
+                </div>
+                <h3>Active Reports</h3>
+                <div id="reports-list-container"></div>
+            </div>
+
+            <!-- ACCOUNT SETTINGS -->
+            <div id="section-settings" class="hidden">
+                <div class="tab-bar">
+                    <div class="tab active" onclick="switchSettingsSubTab('info')">Account Info</div>
+                    <div class="tab" onclick="switchSettingsSubTab('privacy')">Privacy</div>
+                    <div class="tab" onclick="switchSettingsSubTab('billing')">Billing</div>
+                </div>
+
+                <div id="sub-setting-info">
+                    <div style="border: 1px solid #ccc; background: #fdfdfd; padding: 15px; max-width: 500px;">
+                        <div class="form-group">
+                            <label>Username:</label>
+                            <input type="text" id="setting-username-input" value="Guest">
+                        </div>
+                        <div class="form-group">
+                            <label>Personal Bio / Blurb:</label>
+                            <input type="text" id="setting-bio-input" value="Welcome to Dohblox!">
+                        </div>
+                        <button class="btn-style" onclick="saveAccountSettings()">Save Profile Changes</button>
+                    </div>
+                </div>
+
+                <div id="sub-setting-privacy" class="hidden">
+                    <div style="border: 1px solid #ccc; background: #fdfdfd; padding: 15px; max-width: 500px;">
+                        <p>Privacy options set to Default.</p>
+                    </div>
+                </div>
+
+                <div id="sub-setting-billing" class="hidden">
+                    <div style="border: 1px solid #ccc; background: #fdfdfd; padding: 15px; max-width: 500px;">
+                        <p><strong>Current Membership:</strong> <span id="settings-current-membership">Member</span></p>
+                        <p><strong>Dohbux Balance:</strong> <span id="settings-current-balance">0</span> B</p>
+                    </div>
+                </div>
+            </div>
+
+        </div>
+    </div>
+</div>
+
+<!-- LOGIN / REGISTER MODAL -->
+<div id="login-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 style="margin-top:0;">Account Authentication</h3>
+        <div class="form-group">
+            <label>Username:</label>
+            <input type="text" id="login-username-input" placeholder="Enter username..." oninput="handleUsernameInput(this.value)">
+        </div>
+        <div class="form-group hidden" id="password-group">
+            <label style="color:#d80000;">Owner Password Required:</label>
+            <input type="password" id="login-password-input" placeholder="Enter owner password...">
+        </div>
+        <div style="display: flex; justify-content: flex-end; gap: 8px; margin-top: 15px;">
+            <button class="btn-style" onclick="closeLoginModal()">Cancel</button>
+            <button class="btn-mod" onclick="processLogin()">Login / Create</button>
+        </div>
+    </div>
+</div>
+
+<!-- PAYMENT MODAL -->
+<div id="payment-modal" class="modal-overlay hidden">
+    <div class="modal-box">
+        <h3 id="modal-item-title" style="margin-top:0;">Complete Purchase</h3>
+        <p>Item Price: <strong id="modal-item-price">$0.00</strong></p>
+        <div style="display: flex; justify-content: flex-end; gap: 10px; margin-top: 20px;">
+            <button class="btn-style" onclick="closePaymentModal()">Cancel</button>
+            <button class="btn-mod" onclick="confirmPaymentSimulation()">Simulate Test Purchase</button>
+        </div>
+    </div>
+</div>
+
+<!-- GAME LOADING SCREEN OVERLAY -->
+<div id="game-loading-overlay" class="hidden">
+    <div class="loading-card">
+        <div class="loading-title">DOH BLOX</div>
+        <div class="loading-game-name" id="loading-game-title">Joining Place...</div>
+        <div class="loading-spinner"></div>
+        <div class="loading-status-text" id="loading-status-text">Connecting to server...</div>
+        <button class="btn-style" onclick="abortGameLaunch()">Cancel</button>
+    </div>
+</div>
+
+<!-- GAME VIEWPORT OVERLAY -->
+<div id="game-viewport-modal" class="hidden">
+    <div class="game-hud">
+        <span id="active-game-title">Game Title</span>
+        <button class="btn-danger" onclick="closeGameViewport()">Leave Game</button>
+    </div>
+    <div id="game-canvas-container">
+        <!-- ON-SCREEN MOBILE TOUCH CONTROLS -->
+        <div id="mobile-touch-controls">
+            <div id="touch-joystick-zone">
+                <div id="touch-joystick-knob"></div>
+            </div>
+            <div id="btn-touch-jump" class="touch-action-btn">JUMP</div>
+            <div id="btn-touch-attack" class="touch-action-btn">SWING</div>
+        </div>
+
+        <div id="game-chat-overlay">
+            <div id="chat-messages">
+                <div class="chat-msg"><span class="chat-user">System:</span> Touch controls enabled! Use screen joystick to move and right-side screen swipe to turn camera.</div>
+            </div>
+            <div id="chat-input-row">
+                <input type="text" id="chat-input-field" placeholder="Chat..." onkeydown="handleChatKey(event)">
+                <button class="btn-style" onclick="sendChatMessage()">Send</button>
+            </div>
+        </div>
+
+        <div id="game-leaderboard">
+            <h4>Players In-Server</h4>
+            <div id="leaderboard-list"></div>
+        </div>
+
+        <div id="achievement-popup">
+            <div class="badge-icon-box">🏆</div>
+            <div class="badge-text-box">
+                <strong>Badge Awarded!</strong>
+                <span id="achievement-title-text">You Beat the Obby!</span>
+            </div>
+        </div>
+
+        <!-- 2009 ROBLOX HUD -->
+        <div id="roblox-hud-bottom">
+            <div class="hotbar-container" id="hotbar-slots-container">
+                <div class="hotbar-slot" data-slot="1" onclick="selectHotbarSlot(0)"><span class="slot-number">1</span><span class="slot-label" id="slot-lbl-0">Empty</span></div>
+                <div class="hotbar-slot" data-slot="2" onclick="selectHotbarSlot(1)"><span class="slot-number">2</span><span class="slot-label" id="slot-lbl-1">Empty</span></div>
+                <div class="hotbar-slot" data-slot="3" onclick="selectHotbarSlot(2)"><span class="slot-number">3</span><span class="slot-label" id="slot-lbl-2">Empty</span></div>
+                <div class="hotbar-slot" data-slot="4" onclick="selectHotbarSlot(3)"><span class="slot-number">4</span><span class="slot-label" id="slot-lbl-3">Empty</span></div>
+                <div class="hotbar-slot" data-slot="5" onclick="selectHotbarSlot(4)"><span class="slot-number">5</span><span class="slot-label" id="slot-lbl-4">Empty</span></div>
+            </div>
+
+            <div class="health-bar-container">
+                <div class="health-bar-fill" id="health-bar-fill" style="width: 100%;"></div>
+                <div class="health-bar-text" id="health-bar-text">100</div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<script>
+    let audioCtx = null;
+    let playerHealth = 100;
+
+    let activeEquippedWeapon = null;
+    let inGameHotbar = Array(10).fill(null);
+    let currentSelectedSlotIndex = 0;
+    let isAttacking = false;
+    let attackSwingTimer = 0;
+    let equippedWeaponMesh = null;
+    let winningPlatformRef = null;
+    let gameLaunchTimeout = null;
+    let loadingStepTimeouts = [];
+
+    // TOUCH CONTROL VARIABLES
+    let touchJoystickVector = { x: 0, y: 0 };
+    let activeJoystickTouchId = null;
+    let activeCameraTouchId = null;
+    let lastCameraTouchPos = { x: 0, y: 0 };
+    let isTouchJumpPressed = false;
+
+    function initAudioContext() {
+        if (!audioCtx) {
+            audioCtx = new (window.AudioContext || window.webkitAudioContext)();
+        }
+        if (audioCtx.state === 'suspended') {
+            audioCtx.resume();
+        }
+    }
+
+    function playFootstepSound() {
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const filter = audioCtx.createBiquadFilter();
+
+            const now = audioCtx.currentTime;
+            osc.type = 'triangle';
+            osc.frequency.setValueAtTime(120 + Math.random() * 30, now);
+            osc.frequency.exponentialRampToValueAtTime(30, now + 0.08);
+
+            filter.type = 'lowpass';
+            filter.frequency.setValueAtTime(300, now);
+
+            gain.gain.setValueAtTime(0.15, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.08);
+
+            osc.connect(filter);
+            filter.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.08);
+        } catch(e) {}
+    }
+
+    function playJumpSound() {
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            const now = audioCtx.currentTime;
+            osc.type = 'sine';
+            osc.frequency.setValueAtTime(180, now);
+            osc.frequency.exponentialRampToValueAtTime(450, now + 0.18);
+
+            gain.gain.setValueAtTime(0.2, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.18);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.18);
+        } catch(e) {}
+    }
+
+    function playLandingSound() {
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            const now = audioCtx.currentTime;
+            osc.type = 'square';
+            osc.frequency.setValueAtTime(80, now);
+            osc.frequency.exponentialRampToValueAtTime(20, now + 0.1);
+
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.1);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc.start(now);
+            osc.stop(now + 0.1);
+        } catch(e) {}
+    }
+
+    function playSlashSound() {
+        if (!audioCtx) return;
+        try {
+            const osc = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+            const now = audioCtx.currentTime;
+
+            osc.type = 'sawtooth';
+            osc.frequency.setValueAtTime(600, now);
+            osc.frequency.exponentialRampToValueAtTime(100, now + 0.15);
+
+            gain.gain.setValueAtTime(0.3, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.15);
+
+            osc.connect(gain);
+            gain.connect(audioCtx.destination);
+            osc.start(now);
+            osc.stop(now + 0.15);
+        } catch(e) {}
+    }
+
+    function playBadgeSound() {
+        if (!audioCtx) return;
+        try {
+            const now = audioCtx.currentTime;
+            const osc1 = audioCtx.createOscillator();
+            const osc2 = audioCtx.createOscillator();
+            const gain = audioCtx.createGain();
+
+            osc1.type = 'sine';
+            osc2.type = 'triangle';
+
+            osc1.frequency.setValueAtTime(523.25, now);
+            osc1.frequency.setValueAtTime(659.25, now + 0.12);
+            osc1.frequency.setValueAtTime(783.99, now + 0.24);
+            osc1.frequency.setValueAtTime(1046.50, now + 0.36);
+
+            osc2.frequency.setValueAtTime(261.63, now);
+            osc2.frequency.setValueAtTime(329.63, now + 0.12);
+            osc2.frequency.setValueAtTime(392.00, now + 0.24);
+            osc2.frequency.setValueAtTime(523.25, now + 0.36);
+
+            gain.gain.setValueAtTime(0.25, now);
+            gain.gain.exponentialRampToValueAtTime(0.001, now + 0.8);
+
+            osc1.connect(gain);
+            osc2.connect(gain);
+            gain.connect(audioCtx.destination);
+
+            osc1.start(now);
+            osc2.start(now);
+            osc1.stop(now + 0.8);
+            osc2.stop(now + 0.8);
+        } catch(e) {}
+    }
+
+    function triggerObbyBadgeWin() {
+        if (!currentUser.badges) currentUser.badges = [];
+        const badgeName = "you beat the obby!";
+        
+        let pRecord = playersDatabase.find(p => p.username.toLowerCase() === currentUser.username.toLowerCase());
+        if(pRecord && (!pRecord.badges || !pRecord.badges.includes(badgeName))) {
+            if(!pRecord.badges) pRecord.badges = [];
+            pRecord.badges.push(badgeName);
+        }
+
+        if (!currentUser.badges.includes(badgeName)) {
+            currentUser.badges.push(badgeName);
+            
+            playBadgeSound();
+            
+            const popup = document.getElementById('achievement-popup');
+            document.getElementById('achievement-title-text').innerText = "you beat the obby!";
+            popup.classList.add('show');
+
+            const chatBox = document.getElementById('chat-messages');
+            if(chatBox) {
+                const msgEl = document.createElement('div');
+                msgEl.className = 'chat-msg';
+                msgEl.innerHTML = `<span style="color:#ffcc00; font-weight:bold;">🏆 System:</span> ${currentUser.username} earned the badge: <strong>you beat the obby!</strong>`;
+                chatBox.appendChild(msgEl);
+                chatBox.scrollTop = chatBox.scrollHeight;
+            }
+
+            setTimeout(() => {
+                popup.classList.remove('show');
+            }, 4000);
+        }
+    }
+
+    function selectHotbarSlot(index) {
+        currentSelectedSlotIndex = index;
+        const slots = document.querySelectorAll('.hotbar-slot');
+        slots.forEach((s, idx) => {
+            if(idx === index) s.classList.add('selected');
+            else s.classList.remove('selected');
+        });
+
+        activeEquippedWeapon = inGameHotbar[index];
+        updateHeldWeaponMesh();
+    }
+
+    function updateHotbarUI() {
+        for(let i = 0; i < 5; i++) {
+            const lbl = document.getElementById(`slot-lbl-${i}`);
+            if(lbl) {
+                lbl.innerText = inGameHotbar[i] ? inGameHotbar[i].name : 'Empty';
+            }
+        }
+    }
+
+    function updateHealthUI(hp) {
+        playerHealth = Math.max(0, Math.min(100, hp));
+        document.getElementById('health-bar-fill').style.width = playerHealth + '%';
+        document.getElementById('health-bar-text').innerText = Math.round(playerHealth);
+    }
+
+    const accountOwnerUsername = "Owner";
+    const OWNER_PASSWORD = "Adminpassword123";
+
+    let currentUser = {
+        username: "Guest",
+        balance: 0,
+        isMod: false,
+        isBanned: false,
+        membership: "Member",
+        badges: [],
+        inventory: [],
+        equipped: [],
+        colors: { torso: 0x0055b3, limbs: 0xffcc00 }
+    };
+
+    let gamesDatabase = [
+        { id: 1, title: "Bloxy Obby Park", type: "obby", description: "Conquer tricky obstacle platforms in the high-flying Bloxy Obby to win the badge!" },
+        { id: 2, title: "Work at a Pizza Place", type: "pizza", description: "Take orders, cook pizzas, and deliver orders to customers!" },
+        { id: 3, title: "Crossroads [2009 Classic]", type: "crossroads", description: "Battle players on the classic 2009 Crossroads arena with full classic weapons loadout!" },
+        { id: 4, title: "Classic 2009 Baseplate", type: "baseplate", description: "Experience the nostalgic green baseplate environment from classic 2009." }
+    ];
+
+    let catalogDatabase = [
+        { id: 1, name: "Classic Top Hat", price: 100, category: "hats", type: "top_hat" },
+        { id: 2, name: "Gold Crown", price: 500, category: "hats", type: "crown" },
+        { id: 3, name: "Boombox Gear", price: 350, category: "gear", type: "boombox" },
+        { id: 4, name: "Cool Sunglasses", price: 75, category: "faces", type: "sunglasses" },
+        { id: 5, name: "Epic Sword", price: 250, category: "gear", type: "sword" }
+    ];
+
+    let playersDatabase = [
+        { username: "Owner", isMod: true, isBanned: false, membership: "Outrageous Dohers Club", badges: [], bio: "Creator and Master Owner of Dohblox." }
+    ];
+
+    let activeReports = [
+        { id: 101, reportedUser: "UserX", reporter: "Player1", reason: "Spamming chat" }
+    ];
+
+    let viewingProfileUser = null;
+    let currentPendingPurchase = null;
+    let activeGameAnimId = null;
+
+    let editorAvatarGroup = null;
+    let profileAvatarGroup = null;
+    let currentGameAvatar = null;
+
+    let editorScene, editorCamera, editorRenderer;
+    let profileScene, profileCamera, profileRenderer;
+
+    window.onload = function() {
+        renderHeader();
+        renderGamesGrid();
+        renderCatalog('all');
+        renderReportsList();
+        setupMobileTouchListeners();
+    };
+
+    function switchTab(tabName) {
+        if (tabName === 'settings' && isGuestUser(currentUser.username)) {
+            alert("Account Settings are not available for Guest accounts.");
+            return;
+        }
+
+        ['games', 'inbox', 'catalog', 'avatar', 'shop', 'profile', 'moderation', 'settings'].forEach(s => {
+            const el = document.getElementById(`section-${s}`);
+            if(el) el.classList.add('hidden');
+        });
+        const target = document.getElementById(`section-${tabName}`);
+        if(target) target.classList.remove('hidden');
+
+        if(tabName === 'avatar') {
+            setTimeout(() => initAvatarEditor3D(), 10);
+        }
+
+        if(tabName === 'profile' && !viewingProfileUser) {
+            loadProfileView(currentUser.username);
+        }
+    }
+
+    function isGuestUser(username) {
+        return /^Guest(\s*\d+)?$/i.test(username.trim());
+    }
+
+    function openMyOwnProfile() {
+        viewingProfileUser = null;
+        switchTab('profile');
+        loadProfileView(currentUser.username);
+    }
+
+    function switchSettingsSubTab(sub) {
+        ['info', 'privacy', 'billing'].forEach(s => {
+            const el = document.getElementById(`sub-setting-${s}`);
+            if(el) el.classList.add('hidden');
+        });
+        document.getElementById(`sub-setting-${sub}`).classList.remove('hidden');
+    }
+
+    function renderHeader() {
+        document.getElementById('header-user-display').innerText = currentUser.username;
+        document.getElementById('header-balance').innerText = currentUser.balance;
+        
+        const settingsBal = document.getElementById('settings-current-balance');
+        const settingsMem = document.getElementById('settings-current-membership');
+        if(settingsBal) settingsBal.innerText = currentUser.balance;
+        if(settingsMem) settingsMem.innerText = currentUser.membership;
+
+        const vIcon = document.getElementById('header-verified-icon');
+        vIcon.style.display = (currentUser.username.toLowerCase() === accountOwnerUsername.toLowerCase()) ? 'inline' : 'none';
+        
+        const navMod = document.getElementById('nav-mod-tab');
+        navMod.style.display = currentUser.isMod ? 'inline-block' : 'none';
+
+        const isGuest = isGuestUser(currentUser.username);
+        const navSettings = document.getElementById('nav-settings-tab');
+        const sidebarSettings = document.getElementById('sidebar-settings-tab');
+        if(navSettings) navSettings.style.display = isGuest ? 'none' : 'inline-block';
+        if(sidebarSettings) sidebarSettings.style.display = isGuest ? 'none' : 'block';
+
+        const btnLogin = document.getElementById('btn-login-modal');
+        btnLogin.innerText = isGuest ? "Login" : `Logout`;
+    }
+
+    function renderGamesGrid() {
+        const container = document.getElementById('games-grid-container');
+        container.innerHTML = '';
+        gamesDatabase.forEach(g => {
+            const card = document.createElement('div');
+            card.className = 'game-card';
+            const canvasId = `thumb-canvas-${g.id}`;
+            
+            card.innerHTML = `
+                <div class="card-banner">
+                    <canvas id="${canvasId}" width="260" height="120"></canvas>
+                </div>
+                <strong style="color:#0055b3; font-size:13px; display:block; margin-top:4px;">${g.title}</strong>
+                <p style="margin: 4px 0 8px 0; color:#444; font-size:11px; line-height:1.2; min-height: 28px;">${g.description}</p>
+                <button class="btn-play" onclick="launchGame('${g.title}')">Play Game</button>
+            `;
+            container.appendChild(card);
+
+            setTimeout(() => drawGameThumbnail(canvasId, g.type, g.title), 20);
+        });
+    }
+
+    function drawGameThumbnail(canvasId, type, title) {
+        const canvas = document.getElementById(canvasId);
+        if(!canvas) return;
+        const ctx = canvas.getContext('2d');
+        
+        ctx.fillStyle = '#7EC0EE';
+        ctx.fillRect(0, 0, 260, 120);
+
+        if(type === 'crossroads') {
+            ctx.fillStyle = '#4C9A2A';
+            ctx.fillRect(0, 85, 260, 35);
+            ctx.fillStyle = '#808080';
+            ctx.fillRect(40, 25, 40, 60);
+            ctx.fillStyle = '#CC0000';
+            ctx.fillRect(150, 45, 55, 40);
+            ctx.fillStyle = '#EEEE00';
+            ctx.fillRect(165, 25, 25, 20);
+        } else if(type === 'obby') {
+            ctx.fillStyle = '#1c2d42';
+            ctx.fillRect(0, 0, 260, 120);
+            ctx.fillStyle = '#0055b3';
+            ctx.fillRect(20, 90, 50, 12);
+            ctx.fillStyle = '#ffcc00';
+            ctx.fillRect(90, 70, 50, 12);
+            ctx.fillStyle = '#d80000';
+            ctx.fillRect(160, 50, 50, 12);
+            ctx.fillStyle = '#00b33c';
+            ctx.fillRect(210, 30, 40, 12);
+        } else if(type === 'pizza') {
+            ctx.fillStyle = '#d9cbb4';
+            ctx.fillRect(0, 0, 260, 80);
+            ctx.fillStyle = '#8c5230';
+            ctx.fillRect(0, 80, 260, 40);
+            ctx.fillStyle = '#a83232';
+            ctx.fillRect(160, 30, 70, 50);
+            ctx.fillStyle = '#222';
+            ctx.fillRect(180, 50, 30, 30);
+            ctx.fillStyle = '#5c3a21';
+            ctx.fillRect(20, 60, 110, 20);
+        } else {
+            ctx.fillStyle = '#4C9A2A';
+            ctx.fillRect(0, 75, 260, 45);
+            ctx.strokeStyle = '#3b7821';
+            ctx.lineWidth = 1;
+            for(let x=0; x<260; x+=20) {
+                ctx.beginPath(); ctx.moveTo(x, 75); ctx.lineTo(x, 120); ctx.stroke();
+            }
+        }
+
+        ctx.fillStyle = '#ffffff';
+        ctx.font = 'bold 12px Arial';
+        ctx.shadowColor = '#000000';
+        ctx.shadowBlur = 3;
+        ctx.fillText(title.toUpperCase(), 10, 20);
+        ctx.shadowBlur = 0;
+    }
+
+    function openLoginModal() {
+        if(!isGuestUser(currentUser.username)) {
+            currentUser.username = "Guest";
+            currentUser.isMod = false;
+            currentUser.balance = 0;
+            currentUser.badges = [];
+            currentUser.membership = "Member";
+            renderHeader();
+            alert("Logged out successfully.");
+            return;
+        }
+        document.getElementById('login-username-input').value = '';
+        document.getElementById('login-password-input').value = '';
+        document.getElementById('password-group').classList.add('hidden');
+        document.getElementById('login-modal').classList.remove('hidden');
+    }
+
+    function closeLoginModal() { document.getElementById('login-modal').classList.add('hidden'); }
+
+    function handleUsernameInput(val) {
+        const passGroup = document.getElementById('password-group');
+        if (val.trim().toLowerCase() === accountOwnerUsername.toLowerCase()) {
+            passGroup.classList.remove('hidden');
+        } else {
+            passGroup.classList.add('hidden');
+        }
+    }
+
+    function processLogin() {
+        const val = document.getElementById('login-username-input').value.trim();
+        const passVal = document.getElementById('login-password-input').value;
+
+        if(!val) return alert("Please enter a username.");
+
+        if(val.toLowerCase() === accountOwnerUsername.toLowerCase()) {
+            if(passVal !== OWNER_PASSWORD) {
+                alert("Incorrect password for Owner account!");
+                return;
+            }
+        }
+
+        let existing = playersDatabase.find(p => p.username.toLowerCase() === val.toLowerCase());
+        if(existing) {
+            currentUser.username = existing.username;
+            currentUser.isMod = existing.isMod;
+            currentUser.membership = existing.membership;
+            currentUser.badges = existing.badges || [];
+        } else {
+            currentUser.username = val;
+            currentUser.isMod = false;
+            currentUser.membership = "Member";
+            currentUser.badges = [];
+            playersDatabase.push({ username: val, isMod: false, isBanned: false, membership: "Member", badges: [], bio: "New player!" });
+        }
+        currentUser.balance = 1000;
+        renderHeader();
+        closeLoginModal();
+    }
+
+    function searchPlayerGlobal() {
+        const val = document.getElementById('global-player-search').value.trim();
+        if(!val) return;
+        inspectReportedUser(val);
+    }
+
+    function createR6Character(torsoColor, limbColor) {
+        const charGroup = new THREE.Group();
+        const matHead = new THREE.MeshLambertMaterial({ color: 0xffcc00 });
+        const matTorso = new THREE.MeshLambertMaterial({ color: torsoColor });
+        const matLimbs = new THREE.MeshLambertMaterial({ color: limbColor });
+
+        const head = new THREE.Mesh(new THREE.BoxGeometry(0.7, 0.7, 0.7), matHead);
+        head.position.y = 2.75;
+        head.name = "head";
+
+        const torso = new THREE.Mesh(new THREE.BoxGeometry(0.8, 1.0, 0.4), matTorso);
+        torso.position.y = 1.9;
+        torso.name = "torso";
+
+        const leftArmGroup = new THREE.Group();
+        leftArmGroup.position.set(-0.62, 2.3, 0);
+        leftArmGroup.name = "leftArmGroup";
+        const leftArm = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.0, 0.38), matLimbs);
+        leftArm.position.y = -0.4;
+        leftArm.name = "leftArm";
+        leftArmGroup.add(leftArm);
+
+        const rightArmGroup = new THREE.Group();
+        rightArmGroup.position.set(0.62, 2.3, 0);
+        rightArmGroup.name = "rightArmGroup";
+        const rightArm = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.0, 0.38), matLimbs);
+        rightArm.position.y = -0.4;
+        rightArm.name = "rightArm";
+        rightArmGroup.add(rightArm);
+
+        const leftLegGroup = new THREE.Group();
+        leftLegGroup.position.set(-0.21, 1.4, 0);
+        leftLegGroup.name = "leftLegGroup";
+        const leftLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.4, 0.38), matLimbs);
+        leftLeg.position.y = -0.7;
+        leftLeg.name = "leftLeg";
+        leftLegGroup.add(leftLeg);
+
+        const rightLegGroup = new THREE.Group();
+        rightLegGroup.position.set(0.21, 1.4, 0);
+        rightLegGroup.name = "rightLegGroup";
+        const rightLeg = new THREE.Mesh(new THREE.BoxGeometry(0.38, 1.4, 0.38), matLimbs);
+        rightLeg.position.y = -0.7;
+        rightLeg.name = "rightLeg";
+        rightLegGroup.add(rightLeg);
+
+        charGroup.add(head, torso, leftArmGroup, rightArmGroup, leftLegGroup, rightLegGroup);
+        return charGroup;
+    }
+
+    function filterCatalog(cat) { renderCatalog(cat); }
+
+    function renderCatalog(filter) {
+        const container = document.getElementById('catalog-items-container');
+        container.innerHTML = '';
+
+        const items = (filter === 'all') ? catalogDatabase : catalogDatabase.filter(i => i.category === filter);
+
+        items.forEach(item => {
+            const el = document.createElement('div');
+            el.className = 'catalog-item';
+            
+            const prevId = `cat-prev-${item.id}`;
+            el.innerHTML = `
+                <div class="catalog-3d-preview" id="${prevId}"></div>
+                <strong>${item.name}</strong><br>
+                <span style="color: #b8860b; font-weight: bold;">B ${item.price}</span><br><br>
+                <button class="btn-style" onclick="buyCatalogItem(${item.id})">Buy Item</button>
+            `;
+            container.appendChild(el);
+
+            setTimeout(() => render3DItemPreview(prevId, item.type), 50);
+        });
+    }
+
+    function render3DItemPreview(containerId, itemType) {
+        const c = document.getElementById(containerId);
+        if(!c) return;
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0xf0f0f0);
+        const camera = new THREE.PerspectiveCamera(50, c.clientWidth / c.clientHeight, 0.1, 100);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(c.clientWidth, c.clientHeight);
+        c.appendChild(renderer.domElement);
+
+        const itemMesh = create3DAccessoryMesh(itemType);
+        scene.add(itemMesh);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(2, 3, 4);
+        scene.add(light, new THREE.AmbientLight(0x777777));
+
+        camera.position.set(0, 0.5, 2.2);
+
+        function anim() {
+            if(!document.getElementById(containerId)) return;
+            requestAnimationFrame(anim);
+            itemMesh.rotation.y += 0.02;
+            renderer.render(scene, camera);
+        }
+        anim();
+    }
+
+    function create3DAccessoryMesh(type) {
+        const group = new THREE.Group();
+        if(type === 'top_hat') {
+            const brim = new THREE.Mesh(new THREE.CylinderGeometry(0.6, 0.6, 0.05, 16), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+            const crown = new THREE.Mesh(new THREE.CylinderGeometry(0.4, 0.4, 0.6, 16), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+            crown.position.y = 0.3;
+            group.add(brim, crown);
+        } else if(type === 'crown') {
+            const crownMesh = new THREE.Mesh(new THREE.CylinderGeometry(0.45, 0.35, 0.3, 8), new THREE.MeshLambertMaterial({ color: 0xffcc00 }));
+            group.add(crownMesh);
+        } else if(type === 'boombox') {
+            const box = new THREE.Mesh(new THREE.BoxGeometry(0.8, 0.4, 0.3), new THREE.MeshLambertMaterial({ color: 0x222222 }));
+            const spk1 = new THREE.Mesh(new THREE.CylinderGeometry(0.12, 0.12, 0.32, 12), new THREE.MeshLambertMaterial({ color: 0xdddddd }));
+            spk1.rotation.x = Math.PI / 2; spk1.position.x = -0.25;
+            const spk2 = spk1.clone(); spk2.position.x = 0.25;
+            group.add(box, spk1, spk2);
+        } else if(type === 'sunglasses') {
+            const glass = new THREE.Mesh(new THREE.BoxGeometry(0.6, 0.15, 0.1), new THREE.MeshLambertMaterial({ color: 0x000000 }));
+            group.add(glass);
+        } else if(type === 'sword' || type === 'linked_sword') {
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.08, 1.2, 0.02), new THREE.MeshLambertMaterial({ color: 0xcccccc }));
+            const hilt = new THREE.Mesh(new THREE.BoxGeometry(0.3, 0.05, 0.05), new THREE.MeshLambertMaterial({ color: 0x8b4513 }));
+            hilt.position.y = -0.55;
+            group.add(blade, hilt);
+        } else if(type === 'rocket_launcher') {
+            const tube = new THREE.Mesh(new THREE.CylinderGeometry(0.15, 0.15, 1.1, 12), new THREE.MeshLambertMaterial({ color: 0x335533 }));
+            tube.rotation.x = Math.PI / 2;
+            group.add(tube);
+        } else if(type === 'timebomb') {
+            const bomb = new THREE.Mesh(new THREE.SphereGeometry(0.25, 12, 12), new THREE.MeshLambertMaterial({ color: 0x111111 }));
+            group.add(bomb);
+        } else if(type === 'slingshot') {
+            const wood = new THREE.Mesh(new THREE.BoxGeometry(0.08, 0.6, 0.08), new THREE.MeshLambertMaterial({ color: 0x8b4513 }));
+            group.add(wood);
+        } else if(type === 'trowel') {
+            const blade = new THREE.Mesh(new THREE.BoxGeometry(0.2, 0.4, 0.02), new THREE.MeshLambertMaterial({ color: 0xaaaaaa }));
+            group.add(blade);
+        }
+        return group;
+    }
+
+    function buyCatalogItem(id) {
+        const item = catalogDatabase.find(i => i.id === id);
+        if(!item) return;
+
+        if(!currentUser.inventory.some(i => i.id === item.id)) {
+            if(currentUser.balance >= item.price) {
+                currentUser.balance -= item.price;
+                currentUser.inventory.push(item);
+                renderHeader();
+                updateInventoryUI();
+                alert(`Purchased ${item.name}!`);
+            } else {
+                alert("Not enough Dohbux!");
+            }
+        } else {
+            alert("You already own this item!");
+        }
+    }
+
+    function updateInventoryUI() {
+        const container = document.getElementById('avatar-inventory-list');
+        if(currentUser.inventory.length === 0) {
+            container.innerHTML = '<p>Purchased catalog items appear here.</p>';
+            return;
+        }
+
+        container.innerHTML = currentUser.inventory.map(i => {
+            const isEquipped = currentUser.equipped.some(eq => eq.id === i.id);
+            return `
+                <div style="display:inline-block; border:1px solid #ccc; padding:8px; margin:4px; background:#fff; text-align:center;">
+                    <strong>${i.name}</strong><br>
+                    <button class="btn-style" onclick="toggleEquipItem(${i.id})" style="margin-top:4px;">
+                        ${isEquipped ? 'Unequip' : 'Equip'}
+                    </button>
+                </div>
+            `;
+        }).join('');
+    }
+
+    function toggleEquipItem(id) {
+        const item = currentUser.inventory.find(i => i.id === id);
+        if(!item) return;
+
+        const idx = currentUser.equipped.findIndex(i => i.id === id);
+        if(idx >= 0) {
+            currentUser.equipped.splice(idx, 1);
+        } else {
+            currentUser.equipped.push(item);
+        }
+        updateInventoryUI();
+        refreshAvatarAccessories(editorAvatarGroup);
+        refreshAvatarAccessories(profileAvatarGroup);
+    }
+
+    function refreshAvatarAccessories(charGroup) {
+        if(!charGroup) return;
+        const toRemove = [];
+        charGroup.children.forEach(c => {
+            if(c.name.startsWith("acc_")) toRemove.push(c);
+        });
+        toRemove.forEach(c => charGroup.remove(c));
+
+        currentUser.equipped.forEach(item => {
+            const acc = create3DAccessoryMesh(item.type);
+            acc.name = `acc_${item.id}`;
+
+            if(item.type === 'top_hat' || item.type === 'crown') {
+                acc.position.set(0, 3.15, 0);
+            } else if(item.type === 'sunglasses') {
+                acc.position.set(0, 2.75, 0.38);
+            } else if(item.type === 'boombox') {
+                acc.position.set(0, 1.9, -0.35);
+            } else if(item.type === 'sword') {
+                acc.position.set(0.62, 1.9, 0.2);
+                acc.rotation.z = -Math.PI / 4;
+            }
+            charGroup.add(acc);
+        });
+    }
+
+    function setAvatarColor(part, hex) {
+        if(part === 'torso') currentUser.colors.torso = hex;
+        if(part === 'limbs') currentUser.colors.limbs = hex;
+
+        [editorAvatarGroup, profileAvatarGroup].forEach(group => {
+            if(!group) return;
+            group.children.forEach(child => {
+                if(child.name === 'torso') child.material.color.setHex(currentUser.colors.torso);
+                if(child.name && (child.name.includes('Leg') || child.name.includes('Arm'))) {
+                    child.children.forEach(sub => sub.material.color.setHex(currentUser.colors.limbs));
+                }
+            });
+        });
+    }
+
+    function initAvatarEditor3D() {
+        const c = document.getElementById('avatar-editor-3d');
+        if(!c || c.clientWidth === 0) return;
+
+        c.innerHTML = '';
+        editorScene = new THREE.Scene();
+        editorScene.background = new THREE.Color(0xeef5fc);
+        editorCamera = new THREE.PerspectiveCamera(50, c.clientWidth / c.clientHeight, 0.1, 100);
+        editorRenderer = new THREE.WebGLRenderer({ antialias: true });
+        editorRenderer.setSize(c.clientWidth, c.clientHeight);
+        c.appendChild(editorRenderer.domElement);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(2, 5, 5);
+        editorScene.add(light, new THREE.AmbientLight(0x666666));
+
+        editorCamera.position.set(0, 1.8, 5.0);
+        editorCamera.lookAt(0, 1.5, 0);
+
+        editorAvatarGroup = createR6Character(currentUser.colors.torso, currentUser.colors.limbs);
+        refreshAvatarAccessories(editorAvatarGroup);
+        editorScene.add(editorAvatarGroup);
+
+        function anim() {
+            requestAnimationFrame(anim);
+            if(editorAvatarGroup) editorAvatarGroup.rotation.y += 0.01;
+            editorRenderer.render(editorScene, editorCamera);
+        }
+        anim();
+    }
+
+    function initProfile3D() {
+        const c = document.getElementById('profile-avatar-container');
+        if(!c || c.clientWidth === 0) return;
+
+        c.innerHTML = '';
+        profileScene = new THREE.Scene();
+        profileScene.background = new THREE.Color(0xeef5fc);
+        profileCamera = new THREE.PerspectiveCamera(50, c.clientWidth / c.clientHeight, 0.1, 100);
+        profileRenderer = new THREE.WebGLRenderer({ antialias: true });
+        profileRenderer.setSize(c.clientWidth, c.clientHeight);
+        c.appendChild(profileRenderer.domElement);
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(2, 5, 5);
+        profileScene.add(light, new THREE.AmbientLight(0x666666));
+
+        profileCamera.position.set(0, 1.8, 5.0);
+        profileCamera.lookAt(0, 1.5, 0);
+
+        profileAvatarGroup = createR6Character(currentUser.colors.torso, currentUser.colors.limbs);
+        refreshAvatarAccessories(profileAvatarGroup);
+        profileScene.add(profileAvatarGroup);
+
+        function anim() {
+            requestAnimationFrame(anim);
+            if(profileAvatarGroup) profileAvatarGroup.rotation.y += 0.01;
+            profileRenderer.render(profileScene, profileCamera);
+        }
+        anim();
+    }
+
+    let playerPos = { x: 0, y: 0, z: 0 };
+    let playerVelocityY = 0;
+    let isGrounded = true;
+    let wasGroundedLastFrame = true;
+    let lastStepTime = 0;
+    let keysPressed = {};
+    let walkTimer = 0;
+
+    let cameraPitch = 0.3;
+    let cameraYaw = 0;
+    let isMouseDown = false;
+    let lastMouseX = 0, lastMouseY = 0;
+    let gameColliders = [];
+
+    // ON-SCREEN TOUCH CONTROL HANDLERS
+    function setupMobileTouchListeners() {
+        const joystickZone = document.getElementById('touch-joystick-zone');
+        const knob = document.getElementById('touch-joystick-knob');
+
+        joystickZone.addEventListener('touchstart', (e) => {
+            initAudioContext();
+            if (activeJoystickTouchId === null) {
+                const touch = e.changedTouches[0];
+                activeJoystickTouchId = touch.identifier;
+                updateJoystick(touch);
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchmove', (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                if (touch.identifier === activeJoystickTouchId) {
+                    updateJoystick(touch);
+                } else if (touch.identifier === activeCameraTouchId) {
+                    const deltaX = touch.clientX - lastCameraTouchPos.x;
+                    const deltaY = touch.clientY - lastCameraTouchPos.y;
+                    cameraYaw -= deltaX * 0.007;
+                    cameraPitch = Math.max(-0.2, Math.min(1.2, cameraPitch + deltaY * 0.007));
+                    lastCameraTouchPos = { x: touch.clientX, y: touch.clientY };
+                }
+            }
+        }, { passive: false });
+
+        window.addEventListener('touchend', (e) => {
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                if (touch.identifier === activeJoystickTouchId) {
+                    activeJoystickTouchId = null;
+                    touchJoystickVector = { x: 0, y: 0 };
+                    knob.style.transform = 'translate(0px, 0px)';
+                } else if (touch.identifier === activeCameraTouchId) {
+                    activeCameraTouchId = null;
+                }
+            }
+        });
+
+        function updateJoystick(touch) {
+            const rect = joystickZone.getBoundingClientRect();
+            const centerX = rect.left + rect.width / 2;
+            const centerY = rect.top + rect.height / 2;
+
+            let dx = touch.clientX - centerX;
+            let dy = touch.clientY - centerY;
+            const distance = Math.sqrt(dx * dx + dy * dy);
+            const maxRadius = 40;
+
+            if (distance > maxRadius) {
+                dx = (dx / distance) * maxRadius;
+                dy = (dy / distance) * maxRadius;
+            }
+
+            knob.style.transform = `translate(${dx}px, ${dy}px)`;
+            touchJoystickVector = { x: dx / maxRadius, y: dy / maxRadius };
+        }
+
+        // Camera Touch Swipe Right Side
+        const container = document.getElementById('game-canvas-container');
+        container.addEventListener('touchstart', (e) => {
+            initAudioContext();
+            for (let i = 0; i < e.changedTouches.length; i++) {
+                const touch = e.changedTouches[i];
+                const isLeftHalf = touch.clientX < window.innerWidth / 2;
+                if (!isLeftHalf && activeCameraTouchId === null) {
+                    activeCameraTouchId = touch.identifier;
+                    lastCameraTouchPos = { x: touch.clientX, y: touch.clientY };
+                }
+            }
+        }, { passive: false });
+
+        // Touch Buttons
+        const jumpBtn = document.getElementById('btn-touch-jump');
+        jumpBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudioContext();
+            isTouchJumpPressed = true;
+        });
+        jumpBtn.addEventListener('touchend', () => { isTouchJumpPressed = false; });
+
+        const attackBtn = document.getElementById('btn-touch-attack');
+        attackBtn.addEventListener('touchstart', (e) => {
+            e.preventDefault();
+            initAudioContext();
+            triggerWeaponUse();
+        });
+    }
+
+    function updateHeldWeaponMesh() {
+        if(!currentGameAvatar) return;
+        const rightArmGroup = currentGameAvatar.getObjectByName("rightArmGroup");
+        if(!rightArmGroup) return;
+
+        if(equippedWeaponMesh) {
+            rightArmGroup.remove(equippedWeaponMesh);
+            equippedWeaponMesh = null;
+        }
+
+        if(activeEquippedWeapon) {
+            equippedWeaponMesh = create3DAccessoryMesh(activeEquippedWeapon.type);
+            equippedWeaponMesh.position.set(0, -0.7, 0.4);
+            equippedWeaponMesh.rotation.x = Math.PI / 2;
+            rightArmGroup.add(equippedWeaponMesh);
+        }
+    }
+
+    function triggerWeaponUse() {
+        if(!activeEquippedWeapon || isAttacking) return;
+        isAttacking = true;
+        attackSwingTimer = 0;
+
+        if(activeEquippedWeapon.type === 'linked_sword') {
+            playSlashSound();
+        }
+    }
+
+    function abortGameLaunch() {
+        if(gameLaunchTimeout) clearTimeout(gameLaunchTimeout);
+        loadingStepTimeouts.forEach(t => clearTimeout(t));
+        loadingStepTimeouts = [];
+        document.getElementById('game-loading-overlay').classList.add('hidden');
+    }
+
+    function launchGame(title) {
+        initAudioContext();
+        
+        document.getElementById('loading-game-title').innerText = title;
+        const statusEl = document.getElementById('loading-status-text');
+        statusEl.innerText = "Requesting Server...";
+        document.getElementById('game-loading-overlay').classList.remove('hidden');
+
+        loadingStepTimeouts.forEach(t => clearTimeout(t));
+        loadingStepTimeouts = [];
+
+        loadingStepTimeouts.push(setTimeout(() => {
+            statusEl.innerText = "Loading Map Geometry...";
+        }, 800));
+
+        loadingStepTimeouts.push(setTimeout(() => {
+            statusEl.innerText = "Spawning Character...";
+        }, 1700));
+
+        if(gameLaunchTimeout) clearTimeout(gameLaunchTimeout);
+        gameLaunchTimeout = setTimeout(() => {
+            document.getElementById('game-loading-overlay').classList.add('hidden');
+            startActualGameSession(title);
+        }, 2500);
+    }
+
+    function startActualGameSession(title) {
+        updateHealthUI(100);
+
+        document.getElementById('active-game-title').innerText = title;
+        const container = document.getElementById('game-canvas-container');
+        
+        const existingCanvas = container.querySelector('canvas');
+        if(existingCanvas) existingCanvas.remove();
+
+        document.getElementById('game-viewport-modal').classList.remove('hidden');
+
+        const game = gamesDatabase.find(g => g.title === title) || {};
+
+        inGameHotbar = Array(10).fill(null);
+        if(game.type === 'crossroads') {
+            inGameHotbar[0] = { name: "Sword", type: "linked_sword" };
+            inGameHotbar[1] = { name: "Rocket", type: "rocket_launcher" };
+            inGameHotbar[2] = { name: "Bomb", type: "timebomb" };
+            inGameHotbar[3] = { name: "Slingshot", type: "slingshot" };
+            inGameHotbar[4] = { name: "Trowel", type: "trowel" };
+        }
+        updateHotbarUI();
+        selectHotbarSlot(0);
+
+        updateLeaderboardUI();
+
+        const scene = new THREE.Scene();
+        scene.background = new THREE.Color(0x87ceeb);
+        const camera = new THREE.PerspectiveCamera(75, window.innerWidth / window.innerHeight, 0.1, 1000);
+        const renderer = new THREE.WebGLRenderer({ antialias: true });
+        renderer.setSize(window.innerWidth, window.innerHeight);
+        container.insertBefore(renderer.domElement, container.firstChild);
+
+        gameColliders = [];
+        winningPlatformRef = null;
+
+        function addPlatform(x, y, z, w, h, d, color, isWinnerBlock = false) {
+            const mesh = new THREE.Mesh(new THREE.BoxGeometry(w, h, d), new THREE.MeshLambertMaterial({ color: color }));
+            mesh.position.set(x, y + h / 2, z);
+            scene.add(mesh);
+            
+            const colData = { minX: x - w/2, maxX: x + w/2, minY: y, maxY: y + h, minZ: z - d/2, maxZ: z + d/2, topY: y + h, isWinnerBlock: isWinnerBlock };
+            gameColliders.push(colData);
+            if(isWinnerBlock) winningPlatformRef = colData;
+            return mesh;
+        }
+
+        if(game.type === 'obby') {
+            addPlatform(0, 0, 0, 10, 1, 10, 0x00b000);
+            for(let i = 1; i <= 7; i++) {
+                const color = i % 2 === 0 ? 0xffcc00 : 0x0055b3;
+                addPlatform(0, i * 2.0, -i * 7, 5, 1, 5, color);
+            }
+            addPlatform(0, 16.0, -56, 8, 1, 8, 0x00b33c, true);
+        } else if(game.type === 'crossroads') {
+            addPlatform(0, 0, 0, 80, 1, 80, 0x4C9A2A);
+            addPlatform(-15, 1, -15, 12, 20, 12, 0x808080);
+            addPlatform(18, 1, 15, 16, 8, 14, 0xCC0000);
+            addPlatform(18, 9, 15, 10, 6, 10, 0xEEEE00);
+            addPlatform(-20, 1, 20, 24, 6, 6, 0x666666);
+            addPlatform(-20, 7, 20, 6, 6, 6, 0x888888);
+        } else if(game.type === 'pizza') {
+            addPlatform(0, 0, 0, 40, 0.5, 40, 0xdddddd);
+            addPlatform(0, 0.5, -6, 12, 2.5, 3, 0x8b4513);
+        } else {
+            addPlatform(0, 0, 0, 100, 1, 100, 0x16a085);
+        }
+
+        currentGameAvatar = createR6Character(currentUser.colors.torso, currentUser.colors.limbs);
+        refreshAvatarAccessories(currentGameAvatar);
+        scene.add(currentGameAvatar);
+        updateHeldWeaponMesh();
+
+        const light = new THREE.DirectionalLight(0xffffff, 1);
+        light.position.set(10, 20, 15);
+        scene.add(light, new THREE.AmbientLight(0x555555));
+
+        window.addEventListener('keydown', onGameKeyDown);
+        window.addEventListener('keyup', onGameKeyUp);
+        
+        renderer.domElement.addEventListener('mousedown', onMouseDown);
+        window.addEventListener('mousemove', onMouseMove);
+        window.addEventListener('mouseup', onMouseUp);
+
+        playerPos = { x: 0, y: 3, z: 0 };
+        playerVelocityY = 0;
+        wasGroundedLastFrame = true;
+
+        function gameLoop() {
+            activeGameAnimId = requestAnimationFrame(gameLoop);
+
+            const gravity = -0.015;
+            playerVelocityY += gravity;
+            playerPos.y += playerVelocityY;
+
+            isGrounded = false;
+            for(let col of gameColliders) {
+                if(
+                    playerPos.x >= col.minX - 0.3 && playerPos.x <= col.maxX + 0.3 &&
+                    playerPos.z >= col.minZ - 0.3 && playerPos.z <= col.maxZ + 0.3
+                ) {
+                    if(playerPos.y <= col.topY && playerPos.y >= col.topY - 1.2 && playerVelocityY <= 0) {
+                        playerPos.y = col.topY;
+                        playerVelocityY = 0;
+                        isGrounded = true;
+
+                        if(col.isWinnerBlock) {
+                            triggerObbyBadgeWin();
+                        }
+                    }
+                }
+            }
+
+            if (isGrounded && !wasGroundedLastFrame) {
+                playLandingSound();
+            }
+            wasGroundedLastFrame = isGrounded;
+
+            if(playerPos.y < -30) {
+                playerPos = { x: 0, y: 5, z: 0 };
+                playerVelocityY = 0;
+                updateHealthUI(playerHealth - 25);
+            }
+
+            if((keysPressed['Space'] || isTouchJumpPressed) && isGrounded) {
+                playerVelocityY = 0.32;
+                isGrounded = false;
+                playJumpSound();
+            }
+
+            const moveSpeed = 0.16;
+            let moveX = 0;
+            let moveZ = 0;
+
+            // COMBINE KEYBOARD AND TOUCH JOYSTICK INPUT
+            if(keysPressed['KeyW'] || keysPressed['ArrowUp']) moveZ -= moveSpeed;
+            if(keysPressed['KeyS'] || keysPressed['ArrowDown']) moveZ += moveSpeed;
+            if(keysPressed['KeyA'] || keysPressed['ArrowLeft']) moveX -= moveSpeed;
+            if(keysPressed['KeyD'] || keysPressed['ArrowRight']) moveX += moveSpeed;
+
+            if (touchJoystickVector.x !== 0 || touchJoystickVector.y !== 0) {
+                moveX = touchJoystickVector.x * moveSpeed;
+                moveZ = touchJoystickVector.y * moveSpeed;
+            }
+
+            const isMoving = (moveX !== 0 || moveZ !== 0);
+
+            if(isMoving) {
+                const sin = Math.sin(cameraYaw);
+                const cos = Math.cos(cameraYaw);
+                
+                playerPos.x += moveX * cos - moveZ * sin;
+                playerPos.z += moveX * sin + moveZ * cos;
+
+                currentGameAvatar.rotation.y = cameraYaw + Math.atan2(moveX, moveZ);
+                walkTimer += 0.25;
+
+                const nowMs = performance.now();
+                if (isGrounded && nowMs - lastStepTime > 320) {
+                    playFootstepSound();
+                    lastStepTime = nowMs;
+                }
+            } else {
+                walkTimer = 0;
+            }
+
+            const leftLegGroup = currentGameAvatar.getObjectByName("leftLegGroup");
+            const rightLegGroup = currentGameAvatar.getObjectByName("rightLegGroup");
+            const leftArmGroup = currentGameAvatar.getObjectByName("leftArmGroup");
+            const rightArmGroup = currentGameAvatar.getObjectByName("rightArmGroup");
+
+            if(leftLegGroup && rightLegGroup && leftArmGroup && rightArmGroup) {
+                if(isMoving && isGrounded) {
+                    leftLegGroup.rotation.x = Math.sin(walkTimer) * 0.6;
+                    rightLegGroup.rotation.x = -Math.sin(walkTimer) * 0.6;
+                    leftArmGroup.rotation.x = -Math.sin(walkTimer) * 0.6;
+                    rightArmGroup.rotation.x = Math.sin(walkTimer) * 0.6;
+                } else if(!isGrounded) {
+                    leftLegGroup.rotation.x = 0.3;
+                    rightLegGroup.rotation.x = -0.3;
+                    leftArmGroup.rotation.x = Math.PI;
+                    rightArmGroup.rotation.x = Math.PI;
+                } else {
+                    leftLegGroup.rotation.x = 0;
+                    rightLegGroup.rotation.x = 0;
+                    leftArmGroup.rotation.x = 0;
+                    rightArmGroup.rotation.x = 0;
+                }
+
+                if(isAttacking) {
+                    attackSwingTimer += 0.2;
+                    rightArmGroup.rotation.x = Math.sin(attackSwingTimer) * 1.5 - 0.5;
+                    if(attackSwingTimer >= Math.PI) {
+                        isAttacking = false;
+                        rightArmGroup.rotation.x = 0;
+                    }
+                }
+            }
+
+            currentGameAvatar.position.set(playerPos.x, playerPos.y, playerPos.z);
+
+            const camDistance = 9;
+            camera.position.x = playerPos.x + camDistance * Math.sin(cameraYaw) * Math.cos(cameraPitch);
+            camera.position.y = playerPos.y + 2.0 + camDistance * Math.sin(cameraPitch);
+            camera.position.z = playerPos.z + Math.cos(cameraYaw) * Math.cos(cameraPitch) * camDistance;
+            
+            camera.lookAt(playerPos.x, playerPos.y + 1.8, playerPos.z);
+
+            renderer.render(scene, camera);
+        }
+        gameLoop();
+    }
+
+    function onGameKeyDown(e) { 
+        keysPressed[e.code] = true; 
+        initAudioContext(); 
+        const keyMap = {'Digit1':0, 'Digit2':1, 'Digit3':2, 'Digit4':3, 'Digit5':4};
+        if (e.code in keyMap) {
+            selectHotbarSlot(keyMap[e.code]);
+        }
+    }
+
+    function onGameKeyUp(e) { keysPressed[e.code] = false; }
+
+    function onMouseDown(e) {
+        initAudioContext();
+        if(e.button === 0) {
+            triggerWeaponUse();
+        }
+        isMouseDown = true;
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    }
+
+    function onMouseMove(e) {
+        if(!isMouseDown) return;
+        const deltaX = e.clientX - lastMouseX;
+        const deltaY = e.clientY - lastMouseY;
+
+        cameraYaw -= deltaX * 0.005;
+        cameraPitch = Math.max(-0.2, Math.min(1.2, cameraPitch + deltaY * 0.005));
+
+        lastMouseX = e.clientX;
+        lastMouseY = e.clientY;
+    }
+
+    function onMouseUp() { isMouseDown = false; }
+
+    function updateLeaderboardUI() {
+        const list = document.getElementById('leaderboard-list');
+        list.innerHTML = `
+            <div class="leaderboard-row"><strong>${currentUser.username}</strong> <span style="color:#ffcc00;">[You]</span></div>
+        `;
+    }
+
+    function closeGameViewport() {
+        if(activeGameAnimId) cancelAnimationFrame(activeGameAnimId);
+        window.removeEventListener('keydown', onGameKeyDown);
+        window.removeEventListener('keyup', onGameKeyUp);
+        window.removeEventListener('mousemove', onMouseMove);
+        window.removeEventListener('mouseup', onMouseUp);
+        document.getElementById('game-viewport-modal').classList.add('hidden');
+    }
+
+    function handleChatKey(e) {
+        if(e.key === 'Enter') sendChatMessage();
+    }
+
+    function sendChatMessage() {
+        const field = document.getElementById('chat-input-field');
+        const text = field.value.trim();
+        if(!text) return;
+
+        const chatBox = document.getElementById('chat-messages');
+        const msgEl = document.createElement('div');
+        msgEl.className = 'chat-msg';
+        msgEl.innerHTML = `<span class="chat-user">${currentUser.username}:</span> ${escapeHtml(text)}`;
+        chatBox.appendChild(msgEl);
+        chatBox.scrollTop = chatBox.scrollHeight;
+
+        field.value = '';
+    }
+
+    function escapeHtml(str) {
+        return str.replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+    }
+
+    function openPaymentModal(title, price) {
+        currentPendingPurchase = { title, price };
+        document.getElementById('modal-item-title').innerText = title;
+        document.getElementById('modal-item-price').innerText = `$${price}`;
+        document.getElementById('payment-modal').classList.remove('hidden');
+    }
+
+    function closePaymentModal() { document.getElementById('payment-modal').classList.add('hidden'); }
+
+    function confirmPaymentSimulation() {
+        if(!currentPendingPurchase) return;
+
+        if(currentPendingPurchase.title.includes('Dohers Club')) {
+            currentUser.membership = currentPendingPurchase.title;
+            alert(`Membership upgraded to ${currentPendingPurchase.title}!`);
+        } else {
+            currentUser.balance += 1000;
+            alert("Dohbux added to your account!");
+        }
+
+        renderHeader();
+        closePaymentModal();
+    }
+
+    function renderReportsList() {
+        const container = document.getElementById('reports-list-container');
+        container.innerHTML = '';
+
+        if(activeReports.length === 0) {
+            container.innerHTML = '<p>No active player reports!</p>';
+            return;
+        }
+
+        activeReports.forEach((rep) => {
+            const item = document.createElement('div');
+            item.className = 'report-item';
+            item.innerHTML = `
+                <div>
+                    <strong>Reported: <span style="color:#d80000;">${rep.reportedUser}</span></strong><br>
+                    <small>Reason: "${rep.reason}"</small>
+                </div>
+                <div style="display:flex; gap:4px;">
+                    <button class="btn-style" onclick="inspectReportedUser('${rep.reportedUser}')">Inspect</button>
+                    <button class="btn-danger" onclick="dismissReport(${rep.id})">Dismiss</button>
+                </div>
+            `;
+            container.appendChild(item);
+        });
+    }
+
+    function dismissReport(reportId) {
+        activeReports = activeReports.filter(r => r.id !== reportId);
+        renderReportsList();
+        alert(`Report #${reportId} has been dismissed.`);
+    }
+
+    function searchProfileFromMod() {
+        const val = document.getElementById('mod-search-input').value.trim();
+        if(!val) return alert("Please enter a username.");
+        inspectReportedUser(val);
+    }
+
+    function inspectReportedUser(username) {
+        switchTab('profile');
+        const exists = loadProfileView(username);
+        if(!exists) {
+            alert(`Player "${username}" does not exist!`);
+        }
+    }
+
+    function loadProfileView(username) {
+        const targetView = document.getElementById('profile-found-view');
+        const notFoundView = document.getElementById('profile-not-found-view');
+
+        let target = playersDatabase.find(p => p.username.toLowerCase() === username.toLowerCase());
+        
+        if(!target) {
+            viewingProfileUser = null;
+            targetView.classList.add('hidden');
+            notFoundView.classList.remove('hidden');
+            return false;
+        }
+
+        targetView.classList.remove('hidden');
+        notFoundView.classList.add('hidden');
+        viewingProfileUser = target;
+
+        document.getElementById('prof-username').innerText = target.username;
+        document.getElementById('prof-bio-text').innerText = target.bio;
+        
+        const isOwner = (target.username.toLowerCase() === accountOwnerUsername.toLowerCase());
+        document.getElementById('prof-verified-icon').style.display = isOwner ? 'inline' : 'none';
+        
+        const badgesContainer = document.getElementById('prof-badges-container');
+        badgesContainer.innerHTML = '';
+
+        if(isOwner) badgesContainer.innerHTML += `<span class="badge-pill badge-verified">✔ Owner</span>`;
+        if(target.isMod) badgesContainer.innerHTML += `<span class="badge-pill badge-mod">🛡️ Mod</span>`;
+        
+        if(target.membership === 'Standard Dohers Club') badgesContainer.innerHTML += `<span class="badge-pill badge-dc">🛠️ DC</span>`;
+        else if(target.membership === 'Turbo Dohers Club') badgesContainer.innerHTML += `<span class="badge-pill badge-tdc">⚡ TDC</span>`;
+        else if(target.membership === 'Outrageous Dohers Club') badgesContainer.innerHTML += `<span class="badge-pill badge-odc">🔥 ODC</span>`;
+
+        const targetBadges = (target.username === currentUser.username) ? (currentUser.badges || []) : (target.badges || []);
+        targetBadges.forEach(b => {
+            badgesContainer.innerHTML += `<span class="badge-pill badge-winner">🏆 ${b}</span>`;
+        });
+
+        const statusEl = document.getElementById('prof-status-text');
+        statusEl.innerText = target.isBanned ? "BANNED" : "Active";
+        statusEl.style.color = target.isBanned ? "red" : "green";
+
+        document.getElementById('prof-role-text').innerText = isOwner ? "Account Owner" : (target.isMod ? "Moderator" : "Player");
+
+        const modPanel = document.getElementById('prof-mod-panel');
+        const modWarning = document.getElementById('prof-mod-warning');
+        const banBtn = document.getElementById('btn-action-ban');
+        const toggleModBtn = document.getElementById('btn-action-toggle-mod');
+
+        if(currentUser.isMod) {
+            modPanel.classList.remove('hidden');
+            modWarning.innerText = "";
+            banBtn.disabled = false;
+
+            const reportSelect = document.getElementById('mod-report-select');
+            reportSelect.innerHTML = '<option value="Direct Ban (No Report Selected)">Direct Ban (No Report Selected)</option>';
+            
+            const userReports = activeReports.filter(r => r.reportedUser.toLowerCase() === target.username.toLowerCase());
+            userReports.forEach(r => {
+                reportSelect.innerHTML += `<option value="Report #${r.id}: ${r.reason}">Report #${r.id}: ${r.reason}</option>`;
+            });
+
+            if(isOwner) {
+                banBtn.disabled = true;
+                modWarning.innerText = "⚠️ You cannot ban the Account Owner.";
+            }
+
+            if(currentUser.username.toLowerCase() === accountOwnerUsername.toLowerCase() && !isOwner) {
+                toggleModBtn.classList.remove('hidden');
+                toggleModBtn.innerText = target.isMod ? "Demote" : "Promote";
+            } else {
+                toggleModBtn.classList.add('hidden');
+            }
+        } else {
+            modPanel.classList.add('hidden');
+        }
+
+        setTimeout(() => initProfile3D(), 10);
+
+        return true;
+    }
+
+    function executeBanCurrentProfile() {
+        if(!viewingProfileUser) return;
+        const reportReason = document.getElementById('mod-report-select').value;
+        viewingProfileUser.isBanned = true;
+        alert(`Player ${viewingProfileUser.username} has been BANNED.\nAction: ${reportReason}`);
+        loadProfileView(viewingProfileUser.username);
+    }
+
+    function toggleModStatusCurrentProfile() {
+        if(!viewingProfileUser) return;
+        viewingProfileUser.isMod = !viewingProfileUser.isMod;
+        alert(`Updated Moderator Status for ${viewingProfileUser.username}`);
+        loadProfileView(viewingProfileUser.username);
+    }
+
+    function saveAccountSettings() {
+        const newName = document.getElementById('setting-username-input').value.trim();
+        const newBio = document.getElementById('setting-bio-input').value.trim();
+        
+        if(!newName) {
+            alert("Username cannot be empty!");
+            return;
+        }
+
+        if(newName.toLowerCase() === accountOwnerUsername.toLowerCase() && currentUser.username.toLowerCase() !== accountOwnerUsername.toLowerCase()) {
+            alert("The username 'Owner' is restricted.");
+            document.getElementById('setting-username-input').value = currentUser.username;
+            return;
+        }
+        
+        currentUser.username = newName;
+        
+        if (currentUser.username.toLowerCase() !== accountOwnerUsername.toLowerCase()) {
+            currentUser.isMod = false;
+        }
+
+        let record = playersDatabase.find(p => p.username.toLowerCase() === newName.toLowerCase());
+        if(!record) {
+            record = { username: newName, isMod: currentUser.isMod, isBanned: false, membership: currentUser.membership, badges: currentUser.badges || [], bio: newBio };
+            playersDatabase.push(record);
+        } else {
+            record.bio = newBio;
+            record.isMod = currentUser.isMod;
+        }
+
+        renderHeader();
+        switchTab('profile');
+        loadProfileView(currentUser.username);
+        alert("Account settings saved!");
+    }
+</script>
+</body>
+</html>
